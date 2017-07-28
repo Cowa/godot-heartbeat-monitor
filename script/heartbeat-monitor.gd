@@ -30,26 +30,48 @@ func _process(delta):
 	update()
 
 func _draw():
-	for i in points_tracking:
-		draw_circle(i, point_width / 2, Color(1.0, 1.0, 1.0))
+	for i in range(points_tracking.size()):
+		if i != 0:
+			draw_line(points_tracking[i - 1], points_tracking[i], Color(1.0, 1.0, 1.0), point_width / 2)
 	
 	draw_circle(Vector2(point_pos_x,point_pos_y), point_width, Color(1.0, 1.0, 1.0))
-
-func _on_top_pike_reached(obj, key):
-	pikes_tween.interpolate_property(self, "point_pos_y", point_pos_y, point_pos_y + 100, 0.2, Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
-	pikes_tween.start() 
-	
-	pikes_tween.connect("tween_complete", self, "_on_down_pike_reached", [], CONNECT_ONESHOT)
-
-func _on_down_pike_reached(obj, key):
-	is_pulsing = false
 
 func _on_Button_pressed():
 	if is_pulsing:
 		return
+	is_pulsing = true
+	pikes_tween.interpolate_property(self, "point_pos_y", point_pos_y, point_pos_y + 10, 0.05, Tween.TRANS_LINEAR, Tween.EASE_IN)
 	
-	pikes_tween.interpolate_property(self, "point_pos_y", point_pos_y, point_pos_y - 100, 1, Tween.TRANS_BOUNCE, Tween.EASE_IN_OUT)
-	pikes_tween.connect("tween_complete", self, "_on_top_pike_reached", [], CONNECT_ONESHOT)
+	pikes_tween.connect("tween_complete", self, "_on_first_down_pike_reached", [], CONNECT_ONESHOT)
+	pikes_tween.start()
+
+##
+# Animation stuff
+##
+func _on_first_down_pike_reached(obj, key):
+	pikes_tween.interpolate_property(self, "point_pos_y", point_pos_y, point_pos_y - 10, 0.05, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	pikes_tween.connect("tween_complete", self, "_on_first_up_pike_reached", [], CONNECT_ONESHOT)
+	pikes_tween.start()
+
+func _on_first_up_pike_reached(obj, key):
+	pikes_tween.interpolate_property(self, "point_pos_y", point_pos_y, point_pos_y + 50, 0.05, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	pikes_tween.connect("tween_complete", self, "_on_second_down_pike_reached", [], CONNECT_ONESHOT)
 	pikes_tween.start()
 	
-	is_pulsing = true
+func _on_second_down_pike_reached(obj, key):
+	pikes_tween.interpolate_property(self, "point_pos_y", point_pos_y, point_pos_y - 150, 0.05, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	pikes_tween.connect("tween_complete", self, "_on_second_up_pike_reached", [], CONNECT_ONESHOT)
+	pikes_tween.start()
+	
+func _on_second_up_pike_reached(obj, key):
+	pikes_tween.interpolate_property(self, "point_pos_y", point_pos_y, point_pos_y + 110, 0.05, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	pikes_tween.connect("tween_complete", self, "_on_third_down_pike_reached", [], CONNECT_ONESHOT)
+	pikes_tween.start()
+	
+func _on_third_down_pike_reached(obj, key):
+	pikes_tween.interpolate_property(self, "point_pos_y", point_pos_y, point_pos_y - 10, 0.05, Tween.TRANS_LINEAR, Tween.EASE_IN)
+	pikes_tween.start()
+	pikes_tween.connect("tween_complete", self, "_on_pikes_animation_end", [], CONNECT_ONESHOT)
+
+func _on_pikes_animation_end(obj, key):
+	is_pulsing = false
